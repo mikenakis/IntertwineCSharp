@@ -1,6 +1,6 @@
 ﻿# Intertwine<br/><sup><sup><sub>Normalizing Interface Invocations</sup></sup></sub>
 
-<style>body {text-align: justify}</style>
+<div style="text-align: justify">
 
 A framework for automatically converting method invocations of any programmatic interface into a single-method _**normal form**_ and converting back to invocations of the original interface.
 
@@ -33,3 +33,4 @@ The solution contains the following projects:
 - See if `RegisterObserver` and `UnregisterObserver` can be implemented as `+=` and `-=` operators.
 
 ■
+</div>
