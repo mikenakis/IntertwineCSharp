@@ -1,10 +1,11 @@
 ﻿# Intertwine<br/><sup><sup><sub>Normalizing Interface Invocations</sup></sup></sub>
 
+<style>body {text-align: justify}</style>
+
 A framework for automatically converting method invocations of any programmatic interface into a single-method _**normal form**_ and converting back to invocations of the original interface.
 
 <p align="center">
-<img title="intertwine logo" src="intertwine-logo.svg" width="256"/><br/>
-The mikenakis:intertwine logo<br/>
+<img title="The Intertwine logo, created by Mike Nakis" src="intertwine-logo.svg" width="256"/>
 </p>
 
 ## Description
@@ -30,4 +31,5 @@ The solution contains the following projects:
 - Add support for creating only the entwiner class or only the untwiner class if the other one is never needed.
 - Replace `int selector` with `MethodKey key` as in the Java implementation.
 - See if `RegisterObserver` and `UnregisterObserver` can be implemented as `+=` and `-=` operators.
+
 ■
