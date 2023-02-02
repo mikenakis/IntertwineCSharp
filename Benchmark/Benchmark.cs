@@ -359,10 +359,10 @@ namespace MikeNakis.Intertwine.Benchmark
 		{
 			private readonly Dictionary<SysReflect.MethodInfo, int> selector_map = new Dictionary<SysReflect.MethodInfo, int>();
 
-			public EntwinerForCastle( System.Type twinee, AnyCall any_call )
-					: base( twinee, any_call )
+			public EntwinerForCastle( System.Type interface_type, AnyCall any_call )
+					: base( interface_type, any_call )
 			{
-				var method_infos = Twinee.GetMethods( SysReflect.BindingFlags.Public | SysReflect.BindingFlags.NonPublic | SysReflect.BindingFlags.Instance );
+				var method_infos = InterfaceType.GetMethods( SysReflect.BindingFlags.Public | SysReflect.BindingFlags.NonPublic | SysReflect.BindingFlags.Instance );
 				for( int i = 0; i < method_infos.Length; i++ )
 					selector_map.Add( method_infos[i], i );
 			}
@@ -479,10 +479,10 @@ namespace MikeNakis.Intertwine.Benchmark
 		{
 			private readonly Dictionary<SysReflect.MethodInfo, int> selector_map = new Dictionary<SysReflect.MethodInfo, int>();
 
-			public EntwinerForLinFu( System.Type twinee, AnyCall any_call )
-					: base( twinee, any_call )
+			public EntwinerForLinFu( System.Type interface_type, AnyCall any_call )
+					: base( interface_type, any_call )
 			{
-				var method_infos = Twinee.GetMethods( SysReflect.BindingFlags.Public | SysReflect.BindingFlags.NonPublic | SysReflect.BindingFlags.Instance );
+				var method_infos = InterfaceType.GetMethods( SysReflect.BindingFlags.Public | SysReflect.BindingFlags.NonPublic | SysReflect.BindingFlags.Instance );
 				for( int i = 0; i < method_infos.Length; i++ )
 					selector_map.Add( method_infos[i], i );
 			}

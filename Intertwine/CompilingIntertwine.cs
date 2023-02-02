@@ -114,7 +114,7 @@ namespace MikeNakis.Intertwine
 			public Entwiner NewEntwiner( AnyCall any_call )
 			{
 				Entwiner entwiner = entwiner_factory.Invoke( any_call );
-				Dbg.Assert( entwiner.Twinee == interface_type );
+				Dbg.Assert( entwiner.InterfaceType == interface_type );
 				Dbg.Assert( entwiner.AnyCall == any_call );
 				return entwiner;
 			}
@@ -122,7 +122,7 @@ namespace MikeNakis.Intertwine
 			public Untwiner NewUntwiner( object target )
 			{
 				Untwiner untwiner = untwiner_factory.Invoke( target );
-				Dbg.Assert( untwiner.Twinee == interface_type );
+				Dbg.Assert( untwiner.InterfaceType == interface_type );
 				Dbg.Assert( untwiner.Target == target );
 				return untwiner;
 			}
@@ -143,17 +143,17 @@ namespace MikeNakis.Intertwine
 			private const SysReflect.TypeAttributes attributes_for_type = SysReflect.TypeAttributes.AutoClass | SysReflect.TypeAttributes.Class | SysReflect.TypeAttributes.Public | SysReflect.TypeAttributes.Sealed | SysReflect.TypeAttributes.BeforeFieldInit;
 			private const SysReflect.MethodAttributes attributes_for_constructor = SysReflect.MethodAttributes.Public | SysReflect.MethodAttributes.HideBySig | SysReflect.MethodAttributes.SpecialName | SysReflect.MethodAttributes.RTSpecialName;
 
-			private static EntwinerFactory create_entwiner( SysReflectEmit.ModuleBuilder module_builder, Sys.Type twinee, IReadOnlyList<SysReflect.MethodInfo> method_infos, SysReflect.ParameterInfo[][] parameter_infos_s, Sys.Type[] interfaces )
+			private static EntwinerFactory create_entwiner( SysReflectEmit.ModuleBuilder module_builder, Sys.Type interface_type, IReadOnlyList<SysReflect.MethodInfo> method_infos, SysReflect.ParameterInfo[][] parameter_infos_s, Sys.Type[] interfaces )
 			{
 				// Start creating the type
-				SysReflectEmit.TypeBuilder type_builder = module_builder.DefineType( "EntwinerFor" + twinee.Name, attributes_for_type, typeof(Entwiner), interfaces );
+				SysReflectEmit.TypeBuilder type_builder = module_builder.DefineType( "EntwinerFor" + interface_type.Name, attributes_for_type, typeof(Entwiner), interfaces );
 
 				// Create the constructor
 				SysReflectEmit.ConstructorBuilder builder_for_constructor = type_builder.DefineConstructor( attributes_for_constructor, SysReflect.CallingConventions.Standard, new[] { typeof(AnyCall) } );
 				{
 					SysReflectEmit.ILGenerator gen = builder_for_constructor.GetILGenerator();
 					gen.Emit( SysReflectEmit.OpCodes.Ldarg_0 );
-					gen.Emit( SysReflectEmit.OpCodes.Ldtoken, twinee );
+					gen.Emit( SysReflectEmit.OpCodes.Ldtoken, interface_type );
 					gen.Emit( SysReflectEmit.OpCodes.Call, method_info_for_get_type_from_handle );
 					gen.Emit( SysReflectEmit.OpCodes.Ldarg_1 );
 					gen.Emit( SysReflectEmit.OpCodes.Call, constructor_info_for_entwiner );
@@ -320,20 +320,20 @@ namespace MikeNakis.Intertwine
 				return (EntwinerFactory)Sys.Delegate.CreateDelegate( typeof(EntwinerFactory), factory_method_info );
 			}
 
-			private static UntwinerFactory create_untwiner( SysReflectEmit.ModuleBuilder module_builder, Sys.Type twinee, IReadOnlyList<SysReflect.MethodInfo> method_infos, IReadOnlyList<SysReflect.ParameterInfo[]> parameter_infos_s )
+			private static UntwinerFactory create_untwiner( SysReflectEmit.ModuleBuilder module_builder, Sys.Type interface_type, IReadOnlyList<SysReflect.MethodInfo> method_infos, IReadOnlyList<SysReflect.ParameterInfo[]> parameter_infos_s )
 			{
 				// Start creating the type
-				SysReflectEmit.TypeBuilder type_builder = module_builder.DefineType( "UntwinerFor" + twinee.Name, attributes_for_type, typeof(Untwiner) );
+				SysReflectEmit.TypeBuilder type_builder = module_builder.DefineType( "UntwinerFor" + interface_type.Name, attributes_for_type, typeof(Untwiner) );
 
 				// Create the _Target field
-				SysReflectEmit.FieldBuilder field_builder_for_target = type_builder.DefineField( "_Target", twinee, SysReflect.FieldAttributes.Private | SysReflect.FieldAttributes.InitOnly );
+				SysReflectEmit.FieldBuilder field_builder_for_target = type_builder.DefineField( "_Target", interface_type, SysReflect.FieldAttributes.Private | SysReflect.FieldAttributes.InitOnly );
 
 				// Create the constructor
 				SysReflectEmit.ConstructorBuilder constructor_builder = type_builder.DefineConstructor( attributes_for_constructor, SysReflect.CallingConventions.Standard, new[] { typeof(object) } );
 				{
 					SysReflectEmit.ILGenerator gen = constructor_builder.GetILGenerator();
 					gen.Emit( SysReflectEmit.OpCodes.Ldarg_0 );
-					gen.Emit( SysReflectEmit.OpCodes.Ldtoken, twinee );
+					gen.Emit( SysReflectEmit.OpCodes.Ldtoken, interface_type );
 					gen.Emit( SysReflectEmit.OpCodes.Call, method_info_for_get_type_from_handle );
 					gen.Emit( SysReflectEmit.OpCodes.Call, constructor_info_for_untwiner );
 					gen.Emit( SysReflectEmit.OpCodes.Ldarg_0 );

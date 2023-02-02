@@ -2,19 +2,21 @@
 
 namespace MikeNakis.Intertwine.InterfaceEvents
 {
-	using System.Linq;
+	using System.Collections.Generic;
 	using MikeNakis.Intertwine;
 	using Collections = System.Collections;
-	using Generic = System.Collections.Generic;
+	using SysDiag = System.Diagnostics;
 
 	/// <summary>
 	/// Manages an interface-event.
 	/// </summary>
 	/// <typeparam name="I">The type of interface of the event.</typeparam>
+	[SysDiag.DebuggerDisplay( "{" + nameof(DebugView) + ",nq}" )]
 	public sealed class InterfaceEventManager<I> : IInterfaceEventSource<I> where I : class
 	{
+		[SysDiag.DebuggerBrowsable( SysDiag.DebuggerBrowsableState.RootHidden )] public Untwiner[] DebugView => untwiners.ToArray();
 		private readonly IntertwineFactory intertwine_factory;
-		private readonly Generic.List<Untwiner> untwiners = new Generic.List<Untwiner>();
+		private readonly List<Untwiner> untwiners = new List<Untwiner>();
 
 		/// <summary>
 		/// The trigger of the event. (Invoke this to cause the event to be triggered.)
@@ -50,20 +52,14 @@ namespace MikeNakis.Intertwine.InterfaceEvents
 			if( register )
 			{
 				Untwiner untwiner = intertwine_factory.GetIntertwine<I>().NewUntwiner( observer );
-				lock( untwiners )
-				{
-					Dbg.Assert( !Source.IsObserverRegistered( observer ) ); //observer is already registered.
-					untwiners.Add( untwiner );
-				}
+				Dbg.Assert( !Source.IsObserverRegistered( observer ) ); //observer is already registered.
+				untwiners.Add( untwiner );
 			}
 			else
 			{
-				lock( untwiners )
-				{
-					var untwiner = find_untwiner_by_observer( observer );
-					bool ok = untwiners.Remove( untwiner );
-					Dbg.Assert( ok ); //observer was not registered.
-				}
+				var untwiner = find_untwiner_by_observer( observer );
+				bool ok = untwiners.Remove( untwiner );
+				Dbg.Assert( ok ); //observer was not registered.
 			}
 		}
 
@@ -86,7 +82,7 @@ namespace MikeNakis.Intertwine.InterfaceEvents
 #if DEBUG
 			/* On the debug build we do not catch exceptions, so as to have the debugger stop at the throwing statement. */
 			int hashcode = get_hashcode( args );
-			foreach( var untwiner in get_untwiners() )
+			foreach( var untwiner in untwiners.ToArray() )
 			{
 				untwiner.AnyCall( selector, args );
 				Dbg.Assert( get_hashcode( args ) == hashcode ); // Ensure that the untwiner did not alter any arguments.
@@ -96,7 +92,7 @@ namespace MikeNakis.Intertwine.InterfaceEvents
 			{
 				/* On the release build we catch all exceptions and discard them, because failure of one observer is no reason
 				to prevent all subsequent observers from observing the event, let alone to cause the issuer of the event to fail. */
-				foreach( var untwiner in get_untwiners() )
+				foreach( var untwiner in untwiners.ToArray() )
 				{
 					try
 					{
@@ -104,28 +100,16 @@ namespace MikeNakis.Intertwine.InterfaceEvents
 					}
 					catch( System.Exception e )
 					{
-						System.Diagnostics.Debug.WriteLine( e.ToString() );
+						SysDiag.Debug.WriteLine( e.ToString() );
 					}
 				}
 			}
 			return null; //events do not return anything.
 		}
 
-		private static int get_hashcode<T>( T arg )
+		private static int get_hashcode( object[] arg )
 		{
-			if( arg.GetType().IsArray )
-				return ((Collections.IStructuralEquatable)arg).GetHashCode( Generic.EqualityComparer<object>.Default );
-			return arg.GetHashCode();
+			return ((Collections.IStructuralEquatable)arg).GetHashCode( EqualityComparer<object>.Default );
 		}
-
-		private Generic.List<Untwiner> get_untwiners()
-		{
-			lock( untwiners )
-				return new Generic.List<Untwiner>( untwiners );
-		}
-
-#if DEBUG
-		[System.Diagnostics.DebuggerBrowsable( System.Diagnostics.DebuggerBrowsableState.RootHidden )] public object[] DebugView => untwiners.Cast<object>().ToArray();
-#endif
 	}
 }

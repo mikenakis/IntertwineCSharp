@@ -9,11 +9,11 @@ namespace MikeNakis.Intertwine.Benchmark
 	{
 		private readonly System.Reflection.MethodInfo[] method_infos;
 
-		public ReflectingUntwiner( System.Type twinee, object target )
-				: base( twinee )
+		public ReflectingUntwiner( System.Type interface_type, object target )
+				: base( interface_type )
 		{
 			Target = target;
-			method_infos = Twinee.GetMethods( System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance );
+			method_infos = InterfaceType.GetMethods( System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance );
 		}
 
 		public override object Target { get; }

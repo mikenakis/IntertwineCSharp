@@ -7,19 +7,19 @@ namespace MikeNakis.Intertwine
 	/// </summary>
 	public abstract class Untwiner
 	{
-		public readonly System.Type Twinee;
+		public readonly System.Type InterfaceType;
 
 		/// <summary>
 		/// Constructor.
 		/// </summary>
-		/// <param name="twinee">The type of the interface untwined by this untwiner.</param>
-		protected Untwiner( System.Type twinee )
+		/// <param name="interface_type">The type of the interface untwined by this untwiner.</param>
+		protected Untwiner( System.Type interface_type )
 		{
-			Twinee = twinee;
+			InterfaceType = interface_type;
 		}
 
 		/// <summary>
-		/// The object which implements the twinee interface and receives untwined calls from this untwiner.
+		/// The object which implements the interface and receives untwined calls from this untwiner.
 		/// </summary>
 		public abstract object Target { get; }
 

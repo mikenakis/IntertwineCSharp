@@ -7,17 +7,17 @@ namespace MikeNakis.Intertwine
 	/// </summary>
 	public abstract class Entwiner
 	{
-		public readonly System.Type Twinee;
+		public readonly System.Type InterfaceType;
 		public readonly AnyCall AnyCall;
 
 		/// <summary>
 		/// Constructor.
 		/// </summary>
-		/// <param name="twinee">The type of the interface entwined by this entwiner.</param>
+		/// <param name="interface_type">The type of the interface entwined by this entwiner.</param>
 		/// <param name="any_call">The AnyCall delegate to invoke for each method invocation of the interface.</param>
-		protected Entwiner( System.Type twinee, AnyCall any_call )
+		protected Entwiner( System.Type interface_type, AnyCall any_call )
 		{
-			Twinee = twinee;
+			InterfaceType = interface_type;
 			AnyCall = any_call;
 		}
 	}
