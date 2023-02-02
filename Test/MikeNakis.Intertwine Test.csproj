@@ -53,8 +53,8 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="InterfaceEventTest.cs" />
-    <Compile Include="IntertwineTest.cs" />
+    <Compile Include="T02_InterfaceEventTest.cs" />
+    <Compile Include="T01_IntertwineTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\InterfaceEvents\MikeNakis.Intertwine.InterfaceEvents.csproj">

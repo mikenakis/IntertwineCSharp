@@ -1,11 +1,12 @@
 ﻿//Author MikeNakis (michael.gr)
+// ReSharper disable InconsistentNaming
 
 namespace MikeNakis.Intertwine.Test
 {
 	using MikeNakis.Intertwine;
 	using MikeNakis.Intertwine.InterfaceEvents;
 	using MikeNakis.Intertwine.InterfaceEvents.Extensions;
-	using UnitTesting = Microsoft.VisualStudio.TestTools.UnitTesting;
+	using VsTesting = Microsoft.VisualStudio.TestTools.UnitTesting;
 	using Text = System.Text;
 
 	public interface MyInterface
@@ -14,12 +15,9 @@ namespace MikeNakis.Intertwine.Test
 		void B( int x, int y );
 	}
 
-	[UnitTesting.TestClass]
-	public class InterfaceEventTest
+	[VsTesting.TestClass]
+	public class T02_InterfaceEventTest
 	{
-		public InterfaceEventTest()
-		{ }
-
 		private sealed class MyInterfaceEventObserver : MyInterface
 		{
 			private readonly string id;
@@ -42,7 +40,7 @@ namespace MikeNakis.Intertwine.Test
 			}
 		}
 
-		[UnitTesting.TestMethod]
+		[VsTesting.TestMethod]
 		public void InterfaceEventsTest()
 		{
 			var manager = new InterfaceEventManager<MyInterface>();

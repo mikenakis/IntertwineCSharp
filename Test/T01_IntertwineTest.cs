@@ -1,4 +1,5 @@
 ﻿//Author MikeNakis (michael.gr)
+// ReSharper disable InconsistentNaming
 
 namespace MikeNakis.Intertwine.Test
 {
@@ -6,12 +7,22 @@ namespace MikeNakis.Intertwine.Test
 	using Sys = System;
 	using VsTesting = Microsoft.VisualStudio.TestTools.UnitTesting;
 
-	[VsTesting.TestClass]
-	public class IntertwineTest
+	public interface IFooable<T>
 	{
-		public IntertwineTest()
-		{ }
+		void Aardvark();
+		T Buffalo();
+		void Crocodile( T t );
+		void Dog( T t, out T ot );
+		void Eagle( T t, ref T rt );
+		T Flamingo { get; set; }
+		T this[ T t ] { get; set; }
 
+//        void Gorilla<P>( P p, ref P rp ); //generics are not supported!
+	}
+
+	[VsTesting.TestClass]
+	public class T01_IntertwineTest
+	{
 		private sealed class FooImplementation<T> : IFooable<T>
 		{
 			private T member;
@@ -22,14 +33,15 @@ namespace MikeNakis.Intertwine.Test
 			T IFooable<T>.Buffalo() => member;
 			void IFooable<T>.Crocodile( T t ) => member = t;
 			void IFooable<T>.Dog( T t, out T ot ) => ot = t;
-			T IFooable<T>.Flamingo { get => member; set => member = value; }
-			T IFooable<T>.this[ T t ] { get => t; set => member = !Equals( t, default(T) ) ? t : value; }
 
 			void IFooable<T>.Eagle( T t, ref T rt )
 			{
 				member = rt;
 				rt = t;
 			}
+
+			T IFooable<T>.Flamingo { get => member; set => member = value; }
+			T IFooable<T>.this[ T t ] { get => t; set => member = !Equals( t, default(T) ) ? t : value; }
 		}
 
 		private static void invoke_foo<T>( IFooable<T> fooable, T t1, T t2 )
@@ -80,12 +92,13 @@ namespace MikeNakis.Intertwine.Test
 			IFooable<T> fooable = new FooImplementation<T>();
 			switch( method )
 			{
-				case Method.Direct: break;
+				case Method.Direct: //
+					break;
 				case Method.Handwritten:
 				{
-					AnyCall untwiner = new UntwinerForFooableHandwritten<T>( fooable ).AnyCall;
+					AnyCall untwiner = new HandwrittenFooableUntwiner<T>( fooable ).AnyCall;
 					Intermediary intermediary = new Intermediary( untwiner );
-					var entwiner = new EntwinerForFooableHandwritten<T>( intermediary.AnyCall );
+					var entwiner = new HandwrittenFooableEntwiner<T>( intermediary.AnyCall );
 					fooable = entwiner;
 					break;
 				}
@@ -108,14 +121,14 @@ namespace MikeNakis.Intertwine.Test
 		{
 			Sys.Diagnostics.Trace.WriteLine( $"{method} ----------------------------------------------------------------" );
 			run( method, true, false );
-			run<sbyte>( method, -120, 65 );
-			run<byte>( method, 1, 240 );
-			run<short>( method, -32000, 8000 );
-			run<ushort>( method, 48000, 65000 );
+			run( method, (sbyte)-120, (sbyte)65 );
+			run( method, (byte)1, (byte)240 );
+			run( method, (short)-32000, (short)8000 );
+			run( method, (ushort)48000, (ushort)65000 );
 			run( method, -1000000, 1000001 );
-			run<uint>( method, 1000000, 2000000 );
+			run( method, 1000000U, 2000000U );
 			run( method, -6000000000L, 6000000000L );
-			run<ulong>( method, 6000000000L, 7000000000L );
+			run( method, 6000000000UL, 7000000000UL );
 			run( method, 1.618034f, 3.14159f );
 			run( method, 1.618034, 3.14159 );
 			run( method, new Sys.DateTime( 1969, 4, 8, 17, 34, 29 ), new Sys.DateTime( 2011, 06, 01, 23, 25, 12 ) );
@@ -126,35 +139,33 @@ namespace MikeNakis.Intertwine.Test
 		}
 
 		[VsTesting.TestMethod]
-		public void IntertwineTestDirect()
+		public void T01_DirectTest()
 		{
 			run( Method.Direct );
 		}
 
 		[VsTesting.TestMethod]
-		public void IntertwineTestHandwritten()
+		public void T02_HandwrittenTest()
 		{
 			run( Method.Handwritten );
 		}
 
 		[VsTesting.TestMethod]
-		public void IntertwineTestIntertwine()
+		public void T03_IntertwineTest()
 		{
 			run( Method.Intertwine );
 		}
 	}
 
-	internal sealed class EntwinerForFooableHandwritten<T> : Entwiner, IFooable<T>
+	internal sealed class HandwrittenFooableEntwiner<T> : Entwiner, IFooable<T>
 	{
-		public EntwinerForFooableHandwritten( AnyCall any_call )
+		public HandwrittenFooableEntwiner( AnyCall any_call )
 				: base( typeof(IFooable<T>), any_call )
 		{ }
 
-		void IFooable<T>.Aardvark() => AnyCall( 0, Sys.Array.Empty<object>() ); //TODO: use this optimization in Intertwine!
+		void IFooable<T>.Aardvark() => AnyCall( 0, Sys.Array.Empty<object>() );
 		T IFooable<T>.Buffalo() => (T)AnyCall( 1, Sys.Array.Empty<object>() );
 		void IFooable<T>.Crocodile( T t ) => AnyCall( 2, new object[] { t } );
-		T IFooable<T>.Flamingo { get => (T)AnyCall( 5, Sys.Array.Empty<object>() ); set => AnyCall( 6, new object[] { value } ); }
-		T IFooable<T>.this[ T t ] { get => (T)AnyCall( 7, new object[] { t } ); set => AnyCall( 8, new object[] { t, value } ); }
 
 		void IFooable<T>.Dog( T t, out T ot )
 		{
@@ -169,13 +180,16 @@ namespace MikeNakis.Intertwine.Test
 			AnyCall( 4, args );
 			rt = (T)args[1];
 		}
+
+		T IFooable<T>.Flamingo { get => (T)AnyCall( 5, Sys.Array.Empty<object>() ); set => AnyCall( 6, new object[] { value } ); }
+		T IFooable<T>.this[ T t ] { get => (T)AnyCall( 7, new object[] { t } ); set => AnyCall( 8, new object[] { t, value } ); }
 	}
 
-	internal sealed class UntwinerForFooableHandwritten<T> : Untwiner
+	internal sealed class HandwrittenFooableUntwiner<T> : Untwiner
 	{
 		private readonly IFooable<T> target;
 
-		public UntwinerForFooableHandwritten( IFooable<T> target )
+		public HandwrittenFooableUntwiner( IFooable<T> target )
 				: base( typeof(IFooable<T>) )
 		{
 			this.target = target;
@@ -292,18 +306,5 @@ namespace MikeNakis.Intertwine.Test
 		{
 			return $"{A}{B}{C}{D}";
 		}
-	}
-
-	public interface IFooable<T>
-	{
-		void Aardvark();
-		T Buffalo();
-		void Crocodile( T t );
-		void Dog( T t, out T ot );
-		void Eagle( T t, ref T rt );
-		T Flamingo { get; set; }
-
-		T this[ T t ] { get; set; }
-//        void Gorilla<P>( P p, ref P rp ); //NOT SUPPORTED!
 	}
 }

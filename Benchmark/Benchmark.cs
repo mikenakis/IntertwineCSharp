@@ -19,10 +19,9 @@ namespace MikeNakis.Intertwine.Benchmark
 			perform_benchmark( 1000, typeof(BenchmarkBlank) );
 			perform_benchmark( 1, typeof(BenchmarkIntertwineCreationWithoutCaching) );
 			perform_benchmark( 1, typeof(BenchmarkLinFuCreationWithoutCaching) );
-			//perform_benchmark( 1, typeof( Benchmark_Castle_Creation_Without_Caching ) ); //does not work anymore, since they got rid of the IsCaching property.
 			perform_benchmark( 10, typeof(BenchmarkIntertwineCreationWithCaching) );
 			perform_benchmark( 10, typeof(BenchmarkLinFuCreationWithCaching) );
-			perform_benchmark( 10, typeof(BenchmarkCastleCreationWithCaching) );
+			perform_benchmark( 10, typeof(BenchmarkCastleCreation) );
 			perform_benchmark( 10, typeof(BenchmarkDirectInvocation) );
 			perform_benchmark( 10, typeof(BenchmarkHandwrittenInvocation) );
 			perform_benchmark( 10, typeof(BenchmarkIntertwineInvocation) );
@@ -58,7 +57,7 @@ namespace MikeNakis.Intertwine.Benchmark
 			return minimum_ticks / SysDiag.Stopwatch.Frequency;
 		}
 
-		private abstract class Benchmark : System.IDisposable
+		private abstract class Benchmark : Sys.IDisposable
 		{
 			public abstract void RunOnce();
 
@@ -93,7 +92,6 @@ namespace MikeNakis.Intertwine.Benchmark
 			}
 
 			T IFooable<T>.Flamingo { get => member; set => member = value; }
-
 			T IFooable<T>.this[ T t ] { get => t; set => member = !Equals( t, default(T) ) ? t : value; }
 		}
 
@@ -219,13 +217,13 @@ namespace MikeNakis.Intertwine.Benchmark
 		}
 
 #region Handwrittern //////////////////////////////////////////////////////////////////////
-		public sealed class EntwinerForFooableHandwritten<T> : Entwiner, IFooable<T>
+		public sealed class HandwrittenFooableEntwiner<T> : Entwiner, IFooable<T>
 		{
-			public EntwinerForFooableHandwritten( AnyCall any_call )
+			public HandwrittenFooableEntwiner( AnyCall any_call )
 					: base( typeof(IFooable<T>), any_call )
 			{ }
 
-			void IFooable<T>.Aardvark() => AnyCall( 0, Sys.Array.Empty<object>() ); //TODO: use this optimization in Intertwine!
+			void IFooable<T>.Aardvark() => AnyCall( 0, Sys.Array.Empty<object>() );
 			T IFooable<T>.Buffalo() => (T)AnyCall( 1, Sys.Array.Empty<object>() );
 			void IFooable<T>.Crocodile( T t ) => AnyCall( 2, new object[] { t } );
 
@@ -247,11 +245,11 @@ namespace MikeNakis.Intertwine.Benchmark
 			T IFooable<T>.this[ T t ] { get => (T)AnyCall( 7, new object[] { t } ); set => AnyCall( 8, new object[] { t, value } ); }
 		}
 
-		private sealed class UntwinerForFooableHandwritten<T> : Untwiner
+		private sealed class HandwrittenFooableUntwiner<T> : Untwiner
 		{
 			private readonly IFooable<T> target;
 
-			public UntwinerForFooableHandwritten( IFooable<T> target )
+			public HandwrittenFooableUntwiner( IFooable<T> target )
 					: base( typeof(IFooable<T>) )
 			{
 				this.target = target;
@@ -266,7 +264,8 @@ namespace MikeNakis.Intertwine.Benchmark
 					case 0:
 						target.Aardvark();
 						return null;
-					case 1: return target.Buffalo();
+					case 1: //
+						return target.Buffalo();
 					case 2:
 						target.Crocodile( (T)args[0] );
 						return null;
@@ -283,15 +282,18 @@ namespace MikeNakis.Intertwine.Benchmark
 						args[1] = t;
 						return null;
 					}
-					case 5: return target.Flamingo;
+					case 5: //
+						return target.Flamingo;
 					case 6:
 						target.Flamingo = (T)args[0];
 						return null;
-					case 7: return target[(T)args[0]];
+					case 7: //
+						return target[(T)args[0]];
 					case 8:
 						target[(T)args[0]] = (T)args[1];
 						return null;
-					default: throw new Sys.InvalidOperationException();
+					default: //
+						throw new Sys.InvalidOperationException();
 				}
 			}
 		}
@@ -303,8 +305,8 @@ namespace MikeNakis.Intertwine.Benchmark
 			public BenchmarkHandwrittenInvocation()
 			{
 				IFooable<string> fooable = new FooImplementation<string>();
-				Untwiner untwiner = new UntwinerForFooableHandwritten<string>( fooable );
-				entwiner = new EntwinerForFooableHandwritten<string>( untwiner.AnyCall );
+				Untwiner untwiner = new HandwrittenFooableUntwiner<string>( fooable );
+				entwiner = new HandwrittenFooableEntwiner<string>( untwiner.AnyCall );
 			}
 
 			public override void RunOnce()
@@ -315,11 +317,11 @@ namespace MikeNakis.Intertwine.Benchmark
 #endregion
 
 #region Castle Benchmarking Routines //////////////////////////////////////////////////////
-		private sealed class BenchmarkCastleCreationWithCaching : Benchmark
+		private sealed class BenchmarkCastleCreation/*WithCaching*/ : Benchmark
 		{
 			private readonly IFooable<string> fooable;
 
-			public BenchmarkCastleCreationWithCaching()
+			public BenchmarkCastleCreation/*WithCaching*/()
 			{
 				fooable = new FooImplementation<string>();
 				//CastleProxyGenerator.ProxyBuilder.ModuleScope.IsCaching = true;  This used to compile, but not anymore. It appears that they discontinued the "IsCaching" property.
