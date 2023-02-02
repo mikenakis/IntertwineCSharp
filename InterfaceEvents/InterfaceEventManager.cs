@@ -32,7 +32,7 @@ namespace MikeNakis.Intertwine.InterfaceEvents
 		public InterfaceEventManager( IntertwineFactory intertwine_factory )
 		{
 			this.intertwine_factory = intertwine_factory;
-			Trigger = intertwine_factory.GetIntertwine<I>().NewEntwiner( any_call );
+			Trigger = intertwine_factory.GetIntertwine<I>().NewEntwiningInstance( any_call );
 		}
 
 		public override string ToString() //Debug only
@@ -49,7 +49,7 @@ namespace MikeNakis.Intertwine.InterfaceEvents
 		{
 			if( register )
 			{
-				Untwiner untwiner = intertwine_factory.GetIntertwine<I>().NewUntwiner( typeof(I), observer );
+				Untwiner untwiner = intertwine_factory.GetIntertwine<I>().NewUntwiner( observer );
 				lock( untwiners )
 				{
 					Dbg.Assert( !Source.IsObserverRegistered( observer ) ); //observer is already registered.

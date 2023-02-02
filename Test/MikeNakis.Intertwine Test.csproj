@@ -22,20 +22,20 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>$(temp)\out\Debug\Intertwine\Test</OutputPath>
-    <IntermediateOutputPath>$(temp)\obj\Debug\Intertwine\Test</IntermediateOutputPath>
+    <OutputPath>$(SolutionDir)bin\Debug</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <IntermediateOutputPath>$(SolutionDir)obj\Debug</IntermediateOutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>$(temp)\out\Release\Intertwine\Test</OutputPath>
-    <IntermediateOutputPath>$(temp)\obj\Release\Intertwine\Test</IntermediateOutputPath>
+    <OutputPath>$(SolutionDir)bin\Release</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <IntermediateOutputPath>$(SolutionDir)obj\Release</IntermediateOutputPath>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />

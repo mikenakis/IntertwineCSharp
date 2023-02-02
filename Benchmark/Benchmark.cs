@@ -164,8 +164,8 @@ namespace MikeNakis.Intertwine.Benchmark
 			public override void RunOnce()
 			{
 				Intertwine<IFooable<string>> intertwine = intertwine_factory.GetIntertwine<IFooable<string>>();
-				AnyCall untwiner = intertwine.NewUntwiner( fooable );
-				intertwine.NewEntwiner( untwiner );
+				AnyCall untwiner = intertwine.NewUntwiningInstance( fooable );
+				intertwine.NewEntwiningInstance( untwiner );
 			}
 		}
 
@@ -182,8 +182,8 @@ namespace MikeNakis.Intertwine.Benchmark
 			public override void RunOnce()
 			{
 				Intertwine<IFooable<string>> intertwine = intertwine_factory.GetIntertwine<IFooable<string>>();
-				AnyCall untwiner = intertwine.NewUntwiner( fooable );
-				intertwine.NewEntwiner( untwiner );
+				AnyCall untwiner = intertwine.NewUntwiningInstance( fooable );
+				intertwine.NewEntwiningInstance( untwiner );
 			}
 		}
 
@@ -196,8 +196,8 @@ namespace MikeNakis.Intertwine.Benchmark
 				IntertwineFactory intertwine_factory = new CachingIntertwineFactory( new CompilingIntertwineFactory() );
 				Intertwine<IFooable<string>> intertwine = intertwine_factory.GetIntertwine<IFooable<string>>();
 				IFooable<string> fooable = new FooImplementation<string>();
-				AnyCall untwiner = intertwine.NewUntwiner( fooable );
-				entwiner = intertwine.NewEntwiner( untwiner );
+				AnyCall untwiner = intertwine.NewUntwiningInstance( fooable );
+				entwiner = intertwine.NewEntwiningInstance( untwiner );
 			}
 
 			public override void RunOnce()

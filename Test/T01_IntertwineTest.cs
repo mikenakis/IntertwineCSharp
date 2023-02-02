@@ -106,9 +106,9 @@ namespace MikeNakis.Intertwine.Test
 				{
 					IntertwineFactory intertwine_factory = new CompilingIntertwineFactory();
 					Intertwine<IFooable<T>> intertwine = intertwine_factory.GetIntertwine<IFooable<T>>();
-					AnyCall untwiner = intertwine.NewUntwiner( fooable );
+					AnyCall untwiner = intertwine.NewUntwiningInstance( fooable );
 					Intermediary intermediary = new Intermediary( untwiner );
-					IFooable<T> entwiner = intertwine.NewEntwiner( intermediary.AnyCall );
+					IFooable<T> entwiner = intertwine.NewEntwiningInstance( intermediary.AnyCall );
 					fooable = entwiner;
 					break;
 				}
