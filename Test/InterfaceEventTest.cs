@@ -1,25 +1,26 @@
 ﻿//Author MikeNakis (michael.gr)
-namespace MikeNakis.InterfaceEvents.Test
+
+namespace MikeNakis.Intertwine.Test
 {
+	using MikeNakis.Intertwine;
+	using MikeNakis.Intertwine.InterfaceEvents;
+	using MikeNakis.Intertwine.InterfaceEvents.Extensions;
 	using UnitTesting = Microsoft.VisualStudio.TestTools.UnitTesting;
 	using Text = System.Text;
-	using MikeNakis.InterfaceEvents.Extensions;
-
 
 	public interface MyInterface
 	{
-		void a( int x );
-		void b( int x, int y );
+		void A( int x );
+		void B( int x, int y );
 	}
 
 	[UnitTesting.TestClass]
 	public class InterfaceEventTest
 	{
 		public InterfaceEventTest()
-		{
-		}
+		{ }
 
-		class MyInterfaceEventObserver: MyInterface
+		private sealed class MyInterfaceEventObserver : MyInterface
 		{
 			private readonly string id;
 			private readonly Text.StringBuilder builder;
@@ -30,14 +31,14 @@ namespace MikeNakis.InterfaceEvents.Test
 				this.builder = builder;
 			}
 
-			public void a( int x )
+			public void A( int x )
 			{
-				builder.Append( id ).Append( ":a(" ).Append( x ).Append( ")" );
+				builder.Append( id ).Append( $":{nameof(A)}(" ).Append( nameof(x) ).Append( ")" );
 			}
 
-			public void b( int x, int y )
+			public void B( int x, int y )
 			{
-				builder.Append( id ).Append( ":b(" ).Append( x ).Append( "," ).Append( y ).Append( ")" );
+				builder.Append( id ).Append( $":{nameof(B)}(" ).Append( nameof(x) ).Append( "," ).Append( nameof(y) ).Append( ")" );
 			}
 		}
 
@@ -48,11 +49,11 @@ namespace MikeNakis.InterfaceEvents.Test
 			var builder = new Text.StringBuilder();
 			manager.Source.RegisterObserver( new MyInterfaceEventObserver( "X", builder ) );
 			manager.Source.RegisterObserver( new MyInterfaceEventObserver( "Y", builder ) );
-			manager.Trigger.a( 1 );
-			Dbg.Assert( builder.ToString() == "X:a(1)Y:a(1)" );
+			manager.Trigger.A( 1 );
+			Dbg.Assert( builder.ToString() == $"X:{nameof(manager.Trigger.A)}(1)Y:{nameof(manager.Trigger.A)}(1)" );
 			builder.Clear();
-			manager.Trigger.b( 2, 3 );
-			Dbg.Assert( builder.ToString() == "X:b(2,3)Y:b(2,3)" );
+			manager.Trigger.B( 2, 3 );
+			Dbg.Assert( builder.ToString() == $"X:{nameof(manager.Trigger.B)}(2,3)Y:{nameof(manager.Trigger.B)}(2,3)" );
 		}
 	}
 }

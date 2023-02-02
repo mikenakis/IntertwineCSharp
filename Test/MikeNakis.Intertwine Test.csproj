@@ -6,9 +6,9 @@
     <ProjectGuid>{C2E57D84-8AF9-4992-87B2-5D8897A91481}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Test</RootNamespace>
-    <AssemblyName>Test</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <RootNamespace>MikeNakis.Intertwine.Test</RootNamespace>
+    <AssemblyName>MikeNakis.Intertwine.Test</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
@@ -16,6 +16,7 @@
     <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
     <IsCodedUITest>False</IsCodedUITest>
     <TestProjectType>UnitTest</TestProjectType>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -56,13 +57,13 @@
     <Compile Include="IntertwineTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\InterfaceEvents\InterfaceEvents.csproj">
+    <ProjectReference Include="..\InterfaceEvents\MikeNakis.Intertwine.InterfaceEvents.csproj">
       <Project>{1816f332-8fc7-4e95-a8d3-2d53b33d4f9c}</Project>
-      <Name>InterfaceEvents</Name>
+      <Name>MikeNakis.Intertwine.InterfaceEvents</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Intertwine\Intertwine.csproj">
+    <ProjectReference Include="..\Intertwine\MikeNakis.Intertwine.csproj">
       <Project>{b840485b-a5c6-4d9b-a8ff-67e971b2c488}</Project>
-      <Name>Intertwine</Name>
+      <Name>MikeNakis.Intertwine</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

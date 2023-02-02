@@ -7,10 +7,11 @@
     <ProjectGuid>{1816F332-8FC7-4E95-A8D3-2D53B33D4F9C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>InterfaceEvents</RootNamespace>
-    <AssemblyName>InterfaceEvents</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <RootNamespace>MikeNakis.Intertwine.InterfaceEvents</RootNamespace>
+    <AssemblyName>MikeNakis.Intertwine.InterfaceEvents</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -46,9 +47,9 @@
     <Compile Include="AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Intertwine\Intertwine.csproj">
+    <ProjectReference Include="..\Intertwine\MikeNakis.Intertwine.csproj">
       <Project>{b840485b-a5c6-4d9b-a8ff-67e971b2c488}</Project>
-      <Name>Intertwine</Name>
+      <Name>MikeNakis.Intertwine</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
