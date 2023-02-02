@@ -153,64 +153,51 @@ namespace MikeNakis.Intertwine.Benchmark
 
 		private sealed class BenchmarkIntertwineCreationWithCaching : Benchmark
 		{
-			private readonly Intertwine intertwine = new Intertwine();
+			private readonly IntertwineFactory intertwine_factory = new CachingIntertwineFactory( new CompilingIntertwineFactory() );
 			private readonly IFooable<string> fooable;
 
 			public BenchmarkIntertwineCreationWithCaching()
 			{
 				fooable = new FooImplementation<string>();
-				intertwine.IsSaving = false;
-			}
-
-			public override void Dispose()
-			{
-				base.Dispose();
-				intertwine.IsSaving = true;
 			}
 
 			public override void RunOnce()
 			{
+				Intertwine<IFooable<string>> intertwine = intertwine_factory.GetIntertwine<IFooable<string>>();
 				AnyCall untwiner = intertwine.NewUntwiner( fooable );
-				intertwine.NewEntwiner<IFooable<string>>( untwiner );
+				intertwine.NewEntwiner( untwiner );
 			}
 		}
 
 		private sealed class BenchmarkIntertwineCreationWithoutCaching : Benchmark
 		{
-			private readonly Intertwine intertwine = new Intertwine();
+			private readonly IntertwineFactory intertwine_factory = new CompilingIntertwineFactory();
 			private readonly IFooable<string> fooable;
 
 			public BenchmarkIntertwineCreationWithoutCaching()
 			{
 				fooable = new FooImplementation<string>();
-				intertwine.IsSaving = false;
-				intertwine.IsCaching = false;
-			}
-
-			public override void Dispose()
-			{
-				base.Dispose();
-				intertwine.IsCaching = true;
-				intertwine.IsSaving = true;
 			}
 
 			public override void RunOnce()
 			{
+				Intertwine<IFooable<string>> intertwine = intertwine_factory.GetIntertwine<IFooable<string>>();
 				AnyCall untwiner = intertwine.NewUntwiner( fooable );
-				intertwine.NewEntwiner<IFooable<string>>( untwiner );
+				intertwine.NewEntwiner( untwiner );
 			}
 		}
 
 		private sealed class BenchmarkIntertwineInvocation : Benchmark
 		{
-			private readonly Intertwine intertwine = new Intertwine();
 			private readonly IFooable<string> entwiner;
 
 			public BenchmarkIntertwineInvocation()
 			{
+				IntertwineFactory intertwine_factory = new CachingIntertwineFactory( new CompilingIntertwineFactory() );
+				Intertwine<IFooable<string>> intertwine = intertwine_factory.GetIntertwine<IFooable<string>>();
 				IFooable<string> fooable = new FooImplementation<string>();
 				AnyCall untwiner = intertwine.NewUntwiner( fooable );
-				entwiner = intertwine.NewEntwiner<IFooable<string>>( untwiner );
+				entwiner = intertwine.NewEntwiner( untwiner );
 			}
 
 			public override void RunOnce()

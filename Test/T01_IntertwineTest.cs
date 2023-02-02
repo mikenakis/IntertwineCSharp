@@ -104,10 +104,11 @@ namespace MikeNakis.Intertwine.Test
 				}
 				case Method.Intertwine:
 				{
-					Intertwine intertwine = new Intertwine();
+					IntertwineFactory intertwine_factory = new CompilingIntertwineFactory();
+					Intertwine<IFooable<T>> intertwine = intertwine_factory.GetIntertwine<IFooable<T>>();
 					AnyCall untwiner = intertwine.NewUntwiner( fooable );
 					Intermediary intermediary = new Intermediary( untwiner );
-					var entwiner = intertwine.NewEntwiner<IFooable<T>>( intermediary.AnyCall );
+					IFooable<T> entwiner = intertwine.NewEntwiner( intermediary.AnyCall );
 					fooable = entwiner;
 					break;
 				}

@@ -13,7 +13,7 @@ namespace MikeNakis.Intertwine.InterfaceEvents
 	/// <typeparam name="I">The type of interface of the event.</typeparam>
 	public sealed class InterfaceEventManager<I> : IInterfaceEventSource<I> where I : class
 	{
-		private readonly Intertwine intertwine;
+		private readonly IntertwineFactory intertwine_factory;
 		private readonly Generic.List<Untwiner> untwiners = new Generic.List<Untwiner>();
 
 		/// <summary>
@@ -29,10 +29,10 @@ namespace MikeNakis.Intertwine.InterfaceEvents
 		/// <summary>
 		/// Constructor
 		/// </summary>
-		public InterfaceEventManager( Intertwine intertwine )
+		public InterfaceEventManager( IntertwineFactory intertwine_factory )
 		{
-			this.intertwine = intertwine;
-			Trigger = intertwine.NewEntwiner<I>( any_call );
+			this.intertwine_factory = intertwine_factory;
+			Trigger = intertwine_factory.GetIntertwine<I>().NewEntwiner( any_call );
 		}
 
 		public override string ToString() //Debug only
@@ -49,7 +49,7 @@ namespace MikeNakis.Intertwine.InterfaceEvents
 		{
 			if( register )
 			{
-				var untwiner = intertwine.NewUntwiner( typeof(I), observer );
+				Untwiner untwiner = intertwine_factory.GetIntertwine<I>().NewUntwiner( typeof(I), observer );
 				lock( untwiners )
 				{
 					Dbg.Assert( !Source.IsObserverRegistered( observer ) ); //observer is already registered.

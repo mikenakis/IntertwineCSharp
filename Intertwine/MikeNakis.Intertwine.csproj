@@ -40,11 +40,14 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CachingIntertwine.cs" />
     <Compile Include="Dbg.cs" />
     <Compile Include="AnyCall.cs" />
     <Compile Include="Entwiner.cs" />
     <Compile Include="Intertwine.cs" />
+    <Compile Include="CompilingIntertwine.cs" />
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="IntertwineFactory.cs" />
     <Compile Include="Untwiner.cs" />
   </ItemGroup>
   <ItemGroup>
