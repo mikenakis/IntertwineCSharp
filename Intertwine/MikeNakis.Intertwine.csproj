@@ -43,7 +43,7 @@
     <Compile Include="Dbg.cs" />
     <Compile Include="AnyCall.cs" />
     <Compile Include="Entwiner.cs" />
-    <Compile Include="Factory.cs" />
+    <Compile Include="Intertwine.cs" />
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Untwiner.cs" />
   </ItemGroup>

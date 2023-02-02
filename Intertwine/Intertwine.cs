@@ -12,13 +12,13 @@ namespace MikeNakis.Intertwine
 	/// <summary>
 	/// Creates instances of <see cref="EntwinerFactory"/> and <see cref="UntwinerFactory"/>.
 	/// </summary>
-	public class Factory
+	public class Intertwine
 	{
 		private delegate Entwiner EntwinerFactory( AnyCall any_call );
 
 		private delegate Untwiner UntwinerFactory( object target );
 
-		private static CacheEntry get_cache_entry( Sys.Type twinee )
+		private CacheEntry get_cache_entry( Sys.Type twinee )
 		{
 			if( !IsCaching )
 				return create_cache_entry( twinee );
@@ -40,7 +40,7 @@ namespace MikeNakis.Intertwine
 		/// <param name="twinee">The type for which to create the entwiner. It must be an interface type.</param>
 		/// <param name="any_call">The <see cref="AnyCall"/> delegate for which to instantiate the entwiner.</param>
 		/// <returns>A new entwiner for the given interface type, instantiated for the given <see cref="AnyCall"/> delegate.</returns>
-		public static Entwiner NewEntwiner( Sys.Type twinee, AnyCall any_call )
+		public Entwiner NewEntwiner( Sys.Type twinee, AnyCall any_call )
 		{
 			Entwiner entwiner = get_cache_entry( twinee ).EntwinerFactory.Invoke( any_call );
 			Dbg.Assert( entwiner.Twinee == twinee );
@@ -57,7 +57,7 @@ namespace MikeNakis.Intertwine
 		/// <param name="twinee">The type for which to create the untwiner. It must be an interface type.</param>
 		/// <param name="target">The target.</param>
 		/// <returns>A new untwiner for the given interface type, instantiated for the given target object.</returns>
-		public static Untwiner NewUntwiner( Sys.Type twinee, object target )
+		public Untwiner NewUntwiner( Sys.Type twinee, object target )
 		{
 			Untwiner untwiner = get_cache_entry( twinee ).UntwinerFactory.Invoke( target );
 			Dbg.Assert( untwiner.Twinee == twinee );
@@ -74,7 +74,7 @@ namespace MikeNakis.Intertwine
 		/// <typeparam name="T">The type for which to create the entwiner. It must be an interface type.</typeparam>
 		/// <param name="any_call">The <see cref="AnyCall"/> delegate for which to instantiate the entwiner.</param>
 		/// <returns>An entwiner for the given interface type instantiated for the given <see cref="AnyCall"/> delegate.</returns>
-		public static T NewEntwiner<T>( AnyCall any_call ) where T : class //actually, where T: interface
+		public T NewEntwiner<T>( AnyCall any_call ) where T : class //actually, where T: interface
 		{
 			return (T)(object)NewEntwiner( typeof(T), any_call );
 		}
@@ -89,7 +89,7 @@ namespace MikeNakis.Intertwine
 		/// <param name="target">The target interface implementation for which to instantiate the untwiner.</param>
 		/// <returns>An untwiner for the given interface type instantiated for the given target interface implementation.
 		/// </returns>
-		public static AnyCall NewUntwiner<T>( T target ) where T : class //actually, where T: interface
+		public AnyCall NewUntwiner<T>( T target ) where T : class //actually, where T: interface
 		{
 			return NewUntwiner( typeof(T), target ).AnyCall;
 		}
@@ -121,12 +121,12 @@ namespace MikeNakis.Intertwine
 			}
 		}
 
-		private static readonly Dictionary<Sys.Type, CacheEntry> cache = new Dictionary<Sys.Type, CacheEntry>();
+		private readonly Dictionary<Sys.Type, CacheEntry> cache = new Dictionary<Sys.Type, CacheEntry>();
 
-		public static bool IsCaching = true;
-		public static bool IsSaving = true;
+		public bool IsCaching = true;
+		public bool IsSaving = true;
 
-		private static CacheEntry create_cache_entry( Sys.Type twinee )
+		private CacheEntry create_cache_entry( Sys.Type twinee )
 		{
 			Dbg.Assert( twinee.IsInterface );
 

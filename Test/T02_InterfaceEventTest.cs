@@ -3,11 +3,10 @@
 
 namespace MikeNakis.Intertwine.Test
 {
-	using MikeNakis.Intertwine;
 	using MikeNakis.Intertwine.InterfaceEvents;
 	using MikeNakis.Intertwine.InterfaceEvents.Extensions;
 	using VsTesting = Microsoft.VisualStudio.TestTools.UnitTesting;
-	using Text = System.Text;
+	using SysText = System.Text;
 
 	public interface MyInterface
 	{
@@ -21,9 +20,9 @@ namespace MikeNakis.Intertwine.Test
 		private sealed class MyInterfaceEventObserver : MyInterface
 		{
 			private readonly string id;
-			private readonly Text.StringBuilder builder;
+			private readonly SysText.StringBuilder builder;
 
-			public MyInterfaceEventObserver( string id, Text.StringBuilder builder )
+			public MyInterfaceEventObserver( string id, SysText.StringBuilder builder )
 			{
 				this.id = id;
 				this.builder = builder;
@@ -43,8 +42,9 @@ namespace MikeNakis.Intertwine.Test
 		[VsTesting.TestMethod]
 		public void InterfaceEventsTest()
 		{
-			var manager = new InterfaceEventManager<MyInterface>();
-			var builder = new Text.StringBuilder();
+			Intertwine intertwine = new Intertwine();
+			var manager = new InterfaceEventManager<MyInterface>( intertwine );
+			var builder = new SysText.StringBuilder();
 			manager.Source.RegisterObserver( new MyInterfaceEventObserver( "X", builder ) );
 			manager.Source.RegisterObserver( new MyInterfaceEventObserver( "Y", builder ) );
 			manager.Trigger.A( 1 );

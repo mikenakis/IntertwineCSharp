@@ -153,61 +153,64 @@ namespace MikeNakis.Intertwine.Benchmark
 
 		private sealed class BenchmarkIntertwineCreationWithCaching : Benchmark
 		{
+			private readonly Intertwine intertwine = new Intertwine();
 			private readonly IFooable<string> fooable;
 
 			public BenchmarkIntertwineCreationWithCaching()
 			{
 				fooable = new FooImplementation<string>();
-				Factory.IsSaving = false;
+				intertwine.IsSaving = false;
 			}
 
 			public override void Dispose()
 			{
 				base.Dispose();
-				Factory.IsSaving = true;
+				intertwine.IsSaving = true;
 			}
 
 			public override void RunOnce()
 			{
-				AnyCall untwiner = Factory.NewUntwiner( fooable );
-				Factory.NewEntwiner<IFooable<string>>( untwiner );
+				AnyCall untwiner = intertwine.NewUntwiner( fooable );
+				intertwine.NewEntwiner<IFooable<string>>( untwiner );
 			}
 		}
 
 		private sealed class BenchmarkIntertwineCreationWithoutCaching : Benchmark
 		{
+			private readonly Intertwine intertwine = new Intertwine();
 			private readonly IFooable<string> fooable;
 
 			public BenchmarkIntertwineCreationWithoutCaching()
 			{
 				fooable = new FooImplementation<string>();
-				Factory.IsSaving = false;
-				Factory.IsCaching = false;
+				intertwine.IsSaving = false;
+				intertwine.IsCaching = false;
 			}
 
 			public override void Dispose()
 			{
 				base.Dispose();
-				Factory.IsCaching = true;
-				Factory.IsSaving = true;
+				intertwine.IsCaching = true;
+				intertwine.IsSaving = true;
 			}
 
 			public override void RunOnce()
 			{
-				AnyCall untwiner = Factory.NewUntwiner( fooable );
-				Factory.NewEntwiner<IFooable<string>>( untwiner );
+				AnyCall untwiner = intertwine.NewUntwiner( fooable );
+				intertwine.NewEntwiner<IFooable<string>>( untwiner );
 			}
 		}
 
 		private sealed class BenchmarkIntertwineInvocation : Benchmark
 		{
+			private readonly Intertwine intertwine = new Intertwine();
 			private readonly IFooable<string> entwiner;
 
 			public BenchmarkIntertwineInvocation()
 			{
 				IFooable<string> fooable = new FooImplementation<string>();
-				AnyCall untwiner = Factory.NewUntwiner( fooable );
-				entwiner = Factory.NewEntwiner<IFooable<string>>( untwiner );
+				AnyCall untwiner = intertwine.NewUntwiner( fooable );
+				entwiner = intertwine.NewEntwiner<IFooable<string>>( untwiner );
 			}
 
 			public override void RunOnce()
