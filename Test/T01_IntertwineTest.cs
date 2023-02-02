@@ -5,6 +5,7 @@ namespace MikeNakis.Intertwine.Test
 {
 	using System.Collections.Generic;
 	using Sys = System;
+	using SysDiag = System.Diagnostics;
 	using VsTesting = Microsoft.VisualStudio.TestTools.UnitTesting;
 
 	public interface IFooable<T>
@@ -88,7 +89,7 @@ namespace MikeNakis.Intertwine.Test
 
 		private static void run<T>( Method method, T t1, T t2 )
 		{
-			Sys.Diagnostics.Trace.WriteLine( $"{method}: {typeof(T).Name}" );
+			SysDiag.Trace.WriteLine( $"{method}: {typeof(T).Name}" );
 			IFooable<T> fooable = new FooImplementation<T>();
 			switch( method )
 			{
@@ -121,7 +122,7 @@ namespace MikeNakis.Intertwine.Test
 
 		private static void run( Method method )
 		{
-			Sys.Diagnostics.Trace.WriteLine( $"{method} ----------------------------------------------------------------" );
+			SysDiag.Trace.WriteLine( $"{method} ----------------------------------------------------------------" );
 			run( method, true, false );
 			run( method, (sbyte)-120, (sbyte)65 );
 			run( method, (byte)1, (byte)240 );
@@ -159,11 +160,14 @@ namespace MikeNakis.Intertwine.Test
 		}
 	}
 
-	internal sealed class HandwrittenFooableEntwiner<T> : Entwiner, IFooable<T>
+	internal sealed class HandwrittenFooableEntwiner<T> : IFooable<T>
 	{
+		public readonly AnyCall AnyCall;
+
 		public HandwrittenFooableEntwiner( AnyCall any_call )
-				: base( typeof(IFooable<T>), any_call )
-		{ }
+		{
+			AnyCall = any_call;
+		}
 
 		void IFooable<T>.Aardvark() => AnyCall( 0, Sys.Array.Empty<object>() );
 		T IFooable<T>.Buffalo() => (T)AnyCall( 1, Sys.Array.Empty<object>() );
@@ -187,19 +191,18 @@ namespace MikeNakis.Intertwine.Test
 		T IFooable<T>.this[ T t ] { get => (T)AnyCall( 7, new object[] { t } ); set => AnyCall( 8, new object[] { t, value } ); }
 	}
 
-	internal sealed class HandwrittenFooableUntwiner<T> : Untwiner
+	internal sealed class HandwrittenFooableUntwiner<T>
 	{
 		private readonly IFooable<T> target;
 
 		public HandwrittenFooableUntwiner( IFooable<T> target )
-				: base( typeof(IFooable<T>) )
 		{
 			this.target = target;
 		}
 
-		public override object Target => target;
+		public /*override*/ object Target => target;
 
-		public override object AnyCall( int selector, object[] args )
+		public /*override*/ object AnyCall( int selector, object[] args )
 		{
 			switch( selector )
 			{
@@ -251,10 +254,9 @@ namespace MikeNakis.Intertwine.Test
 
 		public object AnyCall( int selector, object[] arguments )
 		{
-			Sys.Console.Write( selector + " In:" + dump( arguments ) );
-			Sys.Console.Out.Flush();
+			SysDiag.Debug.Write( selector + " In:" + dump( arguments ) );
 			object result = target( selector, arguments );
-			Sys.Console.WriteLine( "  Out: " + dump( arguments ) + ", result=" + result );
+			SysDiag.Debug.WriteLine( "  Out: " + dump( arguments ) + ", result=" + result );
 			return result;
 		}
 

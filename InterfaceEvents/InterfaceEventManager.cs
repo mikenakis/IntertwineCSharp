@@ -14,9 +14,9 @@ namespace MikeNakis.Intertwine.InterfaceEvents
 	[SysDiag.DebuggerDisplay( "{" + nameof(DebugView) + ",nq}" )]
 	public sealed class InterfaceEventManager<I> : IInterfaceEventSource<I> where I : class
 	{
-		[SysDiag.DebuggerBrowsable( SysDiag.DebuggerBrowsableState.RootHidden )] public Untwiner[] DebugView => untwiners.ToArray();
+		[SysDiag.DebuggerBrowsable( SysDiag.DebuggerBrowsableState.RootHidden )] public AnyCall[] DebugView => untwiners.ToArray();
 		private readonly IntertwineFactory intertwine_factory;
-		private readonly List<Untwiner> untwiners = new List<Untwiner>();
+		private readonly List<AnyCall> untwiners = new List<AnyCall>();
 
 		/// <summary>
 		/// The trigger of the event. (Invoke this to cause the event to be triggered.)
@@ -51,7 +51,7 @@ namespace MikeNakis.Intertwine.InterfaceEvents
 		{
 			if( register )
 			{
-				Untwiner untwiner = intertwine_factory.GetIntertwine<I>().NewUntwiner( observer );
+				AnyCall untwiner = intertwine_factory.GetIntertwine<I>().NewUntwiningInstance( observer );
 				Dbg.Assert( !Source.IsObserverRegistered( observer ) ); //observer is already registered.
 				untwiners.Add( untwiner );
 			}
@@ -69,7 +69,7 @@ namespace MikeNakis.Intertwine.InterfaceEvents
 			return find_untwiner_by_observer( observer ) != null;
 		}
 
-		private Untwiner find_untwiner_by_observer( I observer )
+		private AnyCall find_untwiner_by_observer( I observer )
 		{
 			foreach( var untwiner in untwiners )
 				if( untwiner.Target == observer )
@@ -84,7 +84,7 @@ namespace MikeNakis.Intertwine.InterfaceEvents
 			int hashcode = get_hashcode( args );
 			foreach( var untwiner in untwiners.ToArray() )
 			{
-				untwiner.AnyCall( selector, args );
+				untwiner.Invoke( selector, args );
 				Dbg.Assert( get_hashcode( args ) == hashcode ); // Ensure that the untwiner did not alter any arguments.
 			}
 			if( Dbg.False )
@@ -96,7 +96,7 @@ namespace MikeNakis.Intertwine.InterfaceEvents
 				{
 					try
 					{
-						untwiner.AnyCall( selector, args );
+						untwiner.Invoke( selector, args );
 					}
 					catch( System.Exception e )
 					{

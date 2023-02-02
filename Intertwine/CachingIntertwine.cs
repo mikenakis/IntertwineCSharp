@@ -6,7 +6,8 @@ namespace MikeNakis.Intertwine
 	using System.Collections.Generic;
 	using Sys = System;
 
-	/// <summary> A decorator of <see cref="IntertwineFactory" /> which adds caching.</summary>
+	///<summary>A decorator of <see cref="IntertwineFactory" /> which adds caching.</summary>
+	///<author>michael.gr</author>
 	public class CachingIntertwineFactory : IntertwineFactory
 	{
 		private readonly IntertwineFactory decoree;

@@ -11,7 +11,8 @@ namespace MikeNakis.Intertwine
 	using SysReflect = System.Reflection;
 	using SysReflectEmit = System.Reflection.Emit;
 
-	/// <summary> An implementation of <see cref="IntertwineFactory" /> which uses code generation.</summary>
+	///<summary>An implementation of <see cref="IntertwineFactory" /> which uses code generation.</summary>
+	///<author>michael.gr</author>
 	public class CompilingIntertwineFactory : IntertwineFactory
 	{
 		private delegate Entwiner EntwinerFactory( AnyCall any_call );
@@ -76,55 +77,105 @@ namespace MikeNakis.Intertwine
 				for( int i = 0; i < MethodInfos.Length; i++ )
 					parameter_infos[i] = MethodInfos[i].GetParameters();
 
-				SysReflectEmit.ModuleBuilder module_builder;
+				string name = Dbg.NotNull( interface_type.FullName ) //
+						.Replace( "[", "" )
+						.Replace( "]", "" )
+						.Replace( " ", "" )
+						.Replace( ",", "" )
+						.Replace( "mscorlib", "" )
+						.Replace( "Culture=neutral", "" )
+						.Replace( "PublicKeyToken=", "" )
+						.Replace( "Version=", "_" );
+				using( ModuleBuilderWrapper module_builder_wrapper = get_module_builder_wrapper( save, name ) )
 				{
-					string name = Dbg.NotNull( interface_type.FullName ).Replace( "[", "" ).Replace( "]", "" ).Replace( " ", "" ).Replace( ",", "" ).Replace( "mscorlib", "" ).Replace( "Culture=neutral", "" ).Replace( "PublicKeyToken=", "" ).Replace( "Version=", "_" );
-					string output_filename = name + ".dll";
-					SysReflect.AssemblyName assembly_name = new SysReflect.AssemblyName( "AssemblyFor" + name );
-					SysReflectEmit.AssemblyBuilder assembly_builder = Sys.AppDomain.CurrentDomain.DefineDynamicAssembly( assembly_name, save ? SysReflectEmit.AssemblyBuilderAccess.RunAndSave : SysReflectEmit.AssemblyBuilderAccess.Run, dir: null );
-
-					if( save )
-					{
-						// Mark generated code as debuggable.
-						// See http://blogs.msdn.com/rmbyers/archive/2005/06/26/432922.aspx for explanation.
-						SysReflect.ConstructorInfo constructor_info_for_debuggable_attribute = Dbg.NotNull( typeof(SysDiag.DebuggableAttribute).GetConstructor( new[] { typeof(SysDiag.DebuggableAttribute.DebuggingModes) } ) );
-						SysReflectEmit.CustomAttributeBuilder attribute_builder_for_debuggable = new SysReflectEmit.CustomAttributeBuilder( constructor_info_for_debuggable_attribute, new object[] { SysDiag.DebuggableAttribute.DebuggingModes.DisableOptimizations | SysDiag.DebuggableAttribute.DebuggingModes.Default } );
-						assembly_builder.SetCustomAttribute( attribute_builder_for_debuggable );
-
-						// Create the module builder so that the module can be saved.
-						module_builder = assembly_builder.DefineDynamicModule( assembly_name.Name, output_filename, emitSymbolInfo: true );
-					}
-					else
-					{
-						// Create the module builder without provision for saving.
-						module_builder = assembly_builder.DefineDynamicModule( assembly_name.Name );
-					}
-				}
-
-				entwiner_factory = create_entwiner( module_builder, interface_type, MethodInfos, parameter_infos, interfaces );
-				untwiner_factory = create_untwiner( module_builder, interface_type, MethodInfos, parameter_infos );
-
-				if( save )
-				{
-					var assembly_builder = (SysReflectEmit.AssemblyBuilder)module_builder.Assembly;
-					assembly_builder.Save( SysIo.Path.GetFileName( module_builder.FullyQualifiedName ) );
+					entwiner_factory = create_entwiner( module_builder_wrapper.ModuleBuilder, interface_type, MethodInfos, parameter_infos, interfaces );
+					untwiner_factory = create_untwiner( module_builder_wrapper.ModuleBuilder, interface_type, MethodInfos, parameter_infos );
 				}
 			}
 
-			public Entwiner NewEntwiner( AnyCall any_call )
+			private abstract class ModuleBuilderWrapper : Sys.IDisposable
+			{
+				public abstract SysReflectEmit.ModuleBuilder ModuleBuilder { get; }
+				public abstract void Dispose();
+
+				protected static void MakeDebuggable( SysReflectEmit.AssemblyBuilder assembly_builder )
+				{
+					// Mark generated code as debuggable. See http://blogs.msdn.com/rmbyers/archive/2005/06/26/432922.aspx for explanation.
+					SysReflect.ConstructorInfo constructor_info_for_debuggable_attribute = Dbg.NotNull( typeof(SysDiag.DebuggableAttribute).GetConstructor( new[] { typeof(SysDiag.DebuggableAttribute.DebuggingModes) } ) );
+					SysReflectEmit.CustomAttributeBuilder attribute_builder_for_debuggable = new SysReflectEmit.CustomAttributeBuilder( constructor_info_for_debuggable_attribute, new object[] { SysDiag.DebuggableAttribute.DebuggingModes.DisableOptimizations | SysDiag.DebuggableAttribute.DebuggingModes.Default } );
+					assembly_builder.SetCustomAttribute( attribute_builder_for_debuggable );
+				}
+			}
+
+			private sealed class NetFrameworkCompatibleModuleBuilderWrapper : ModuleBuilderWrapper
+			{
+				private readonly bool save;
+				public override SysReflectEmit.ModuleBuilder ModuleBuilder { get; }
+
+				public NetFrameworkCompatibleModuleBuilderWrapper( bool save, string name )
+				{
+					this.save = save;
+					string output_filename = name + ".dll";
+					SysReflect.AssemblyName assembly_name = new SysReflect.AssemblyName( "AssemblyFor" + name );
+					SysReflectEmit.AssemblyBuilder assembly_builder = Sys.AppDomain.CurrentDomain.DefineDynamicAssembly( assembly_name, save ? SysReflectEmit.AssemblyBuilderAccess.RunAndSave : SysReflectEmit.AssemblyBuilderAccess.Run, dir: null );
+					MakeDebuggable( assembly_builder );
+					ModuleBuilder = save ? assembly_builder.DefineDynamicModule( assembly_name.Name, output_filename, emitSymbolInfo: true ) : assembly_builder.DefineDynamicModule( assembly_name.Name );
+				}
+
+				public override void Dispose()
+				{
+					if( save )
+					{
+						var assembly_builder = (SysReflectEmit.AssemblyBuilder)ModuleBuilder.Assembly;
+						assembly_builder.Save( SysIo.Path.GetFileName( ModuleBuilder.FullyQualifiedName ) );
+					}
+				}
+			}
+
+			private sealed class NetCoreCompatibleModuleBuilderWrapper : ModuleBuilderWrapper
+			{
+				public override SysReflectEmit.ModuleBuilder ModuleBuilder { get; }
+
+				public NetCoreCompatibleModuleBuilderWrapper( string name )
+				{
+					SysReflect.AssemblyName assembly_name = new SysReflect.AssemblyName( "AssemblyFor" + name );
+					SysReflectEmit.AssemblyBuilder assembly_builder = SysReflectEmit.AssemblyBuilder.DefineDynamicAssembly( assembly_name, SysReflectEmit.AssemblyBuilderAccess.Run );
+					MakeDebuggable( assembly_builder );
+					ModuleBuilder = assembly_builder.DefineDynamicModule( assembly_name.Name );
+				}
+
+				public override void Dispose()
+				{
+					/* nothing to do */
+				}
+			}
+
+			private static ModuleBuilderWrapper get_module_builder_wrapper( bool save, string name )
+			{
+				if( save )
+				{
+					if( is_net_core() )
+						throw new Sys.InvalidOperationException(); //you cannot save in net core.
+					return new NetFrameworkCompatibleModuleBuilderWrapper( save, name );
+				}
+				else
+					return new NetCoreCompatibleModuleBuilderWrapper( name );
+			}
+
+			private static bool is_net_core() => typeof(SysReflectEmit.AssemblyBuilder).GetMethod( "Save", new[] { typeof(string) } ) == null;
+
+			public object NewEntwiner( AnyCall any_call )
 			{
 				Entwiner entwiner = entwiner_factory.Invoke( any_call );
-				Dbg.Assert( entwiner.InterfaceType == interface_type );
 				Dbg.Assert( entwiner.AnyCall == any_call );
 				return entwiner;
 			}
 
-			public Untwiner NewUntwiner( object target )
+			public AnyCall NewUntwiner( object target )
 			{
 				Untwiner untwiner = untwiner_factory.Invoke( target );
 				Dbg.Assert( untwiner.InterfaceType == interface_type );
-				Dbg.Assert( untwiner.Target == target );
-				return untwiner;
+				return untwiner.AnyCall;
 			}
 
 			private static readonly SysReflect.MethodInfo method_info_for_get_type_from_handle = Dbg.NotNull( typeof(Sys.Type).GetMethod( "GetTypeFromHandle", new[] { typeof(Sys.RuntimeTypeHandle) } ) );
@@ -134,7 +185,6 @@ namespace MikeNakis.Intertwine
 			private static readonly SysReflect.FieldInfo field_info_for_entwiner_any_call = Dbg.NotNull( typeof(Entwiner).GetField( "AnyCall" ) );
 
 			private static readonly SysReflect.ConstructorInfo constructor_info_for_untwiner = Dbg.NotNull( typeof(Untwiner).GetConstructor( SysReflect.BindingFlags.NonPublic | SysReflect.BindingFlags.Instance, null, SysReflect.CallingConventions.Any, new[] { typeof(Sys.Type) }, null ) );
-			private static readonly SysReflect.MethodInfo method_info_for_untwiner_get_target = Dbg.NotNull( typeof(Untwiner).GetMethod( "get_Target" ) );
 			private static readonly SysReflect.MethodInfo method_info_for_untwiner_any_call = Dbg.NotNull( typeof(Untwiner).GetMethod( "AnyCall" ) );
 			private static readonly SysReflect.ConstructorInfo constructor_info_for_invalid_operation_exception = Dbg.NotNull( typeof(Sys.InvalidOperationException).GetConstructor( Sys.Type.EmptyTypes ) );
 
@@ -163,7 +213,7 @@ namespace MikeNakis.Intertwine
 				// Create each method
 				for( int selector = 0; selector < method_infos.Count; selector++ )
 				{
-					var method_info = method_infos[selector];
+					SysReflect.MethodInfo? method_info = method_infos[selector];
 
 					// Get parameter infos
 					SysReflect.ParameterInfo[] parameter_infos = parameter_infos_s[selector];
@@ -342,16 +392,6 @@ namespace MikeNakis.Intertwine
 					gen.Emit( SysReflectEmit.OpCodes.Ret );
 				}
 
-				// Create the get_Target method
-				SysReflectEmit.MethodBuilder method_builder_for_get_target = type_builder.DefineMethod( "get_Target", SysReflect.MethodAttributes.Public | SysReflect.MethodAttributes.Virtual | SysReflect.MethodAttributes.Final | SysReflect.MethodAttributes.SpecialName, SysReflect.CallingConventions.HasThis, typeof(object), Sys.Type.EmptyTypes );
-				type_builder.DefineMethodOverride( method_builder_for_get_target, method_info_for_untwiner_get_target );
-				{
-					SysReflectEmit.ILGenerator gen = method_builder_for_get_target.GetILGenerator();
-					gen.Emit( SysReflectEmit.OpCodes.Ldarg_0 );
-					gen.Emit( SysReflectEmit.OpCodes.Ldfld, field_builder_for_target );
-					gen.Emit( SysReflectEmit.OpCodes.Ret );
-				}
-
 				// Create the AnyCall method
 				SysReflectEmit.MethodBuilder method_builder_for_any_call = type_builder.DefineMethod( "AnyCall", SysReflect.MethodAttributes.Public | SysReflect.MethodAttributes.Virtual | SysReflect.MethodAttributes.Final, SysReflect.CallingConventions.HasThis, typeof(object), new[] { typeof(int), typeof(object[]) } );
 				type_builder.DefineMethodOverride( method_builder_for_any_call, method_info_for_untwiner_any_call ); //XXX unnecessary?
@@ -398,15 +438,15 @@ namespace MikeNakis.Intertwine
 								Sys.Type actual_parameter_type = Dbg.NotNull( parameter_info.ParameterType.GetElementType() );
 								if( actual_parameter_type.IsValueType )
 								{
-									// Emit code to load the element from the array and unbox it. This is a nifty little optimization: 
+									// Emit code to load the element from the array and unbox it. This is a nifty little optimization:
 									// instead of unboxing the value, storing it into a local variable, passing the local variable byref
-									// to the interface method, and then re-boxing the local variable back into the array, discarding the 
-									// old box, we simply issue a single unbox opcode, which, according to MSDN, “[…] is not required to
-									// copy the value type from the object. Typically it simply computes the address of the value type 
+									// to the interface method, and then re-boxing the local variable back into the array, discarding the
+									// old box, we simply issue a single unbox op-code, which, according to MSDN, “[…] is not required to
+									// copy the value type from the object. Typically it simply computes the address of the value type
 									// that is already present inside of the boxed object.” Thus, after executing unbox, the reference
-									// to the boxed value type is ready in the evaluation stack for the target interface method to 
+									// to the boxed value type is ready in the evaluation stack for the target interface method to
 									// operate upon. In this case, when the method is going to be assigning a value to the byref argument,
-									// it will be altering the actual contents of the boxing object, something which is quite impossible 
+									// it will be altering the actual contents of the boxing object, something which is quite impossible
 									// at the C# level!
 									gen.Emit( SysReflectEmit.OpCodes.Ldelem_Ref );
 									gen.Emit( SysReflectEmit.OpCodes.Unbox, actual_parameter_type );
@@ -433,7 +473,7 @@ namespace MikeNakis.Intertwine
 							}
 						}
 
-						// Emit a call to the method of the twinee interface
+						// Emit a call to the method of the interface
 						gen.Emit( SysReflectEmit.OpCodes.Callvirt, method_info );
 
 						// If this method does not return anything...
@@ -572,7 +612,7 @@ namespace MikeNakis.Intertwine
 			/// <returns>An entwiner for the given interface type instantiated for the given <see cref="AnyCall" /> delegate.</returns>
 			public T NewEntwiningInstance( AnyCall any_call )
 			{
-				return (T)(object)NewEntwiner( any_call );
+				return (T)NewEntwiner( any_call );
 			}
 
 			/// <summary>
@@ -587,7 +627,7 @@ namespace MikeNakis.Intertwine
 			/// </returns>
 			public AnyCall NewUntwiningInstance( T target )
 			{
-				return NewUntwiner( target ).AnyCall;
+				return NewUntwiner( target );
 			}
 		}
 	}

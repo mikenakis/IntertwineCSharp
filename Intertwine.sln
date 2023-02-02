@@ -4,16 +4,16 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FA184FB0-3834-44F4-A391-0AE48034E0D0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Intertwine", "Intertwine\Intertwine.csproj", "{B840485B-A5C6-4D9B-A8FF-67E971B2C488}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Intertwine", "Intertwine\MikeNakis.Intertwine.csproj", "{B840485B-A5C6-4D9B-A8FF-67E971B2C488}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{C2E57D84-8AF9-4992-87B2-5D8897A91481}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\MikeNakis.Intertwine Test.csproj", "{C2E57D84-8AF9-4992-87B2-5D8897A91481}"
 	ProjectSection(ProjectDependencies) = postProject
 		{B840485B-A5C6-4D9B-A8FF-67E971B2C488} = {B840485B-A5C6-4D9B-A8FF-67E971B2C488}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InterfaceEvents", "InterfaceEvents\InterfaceEvents.csproj", "{1816F332-8FC7-4E95-A8D3-2D53B33D4F9C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InterfaceEvents", "InterfaceEvents\MikeNakis.Intertwine.InterfaceEvents.csproj", "{1816F332-8FC7-4E95-A8D3-2D53B33D4F9C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmark", "Benchmark\Benchmark.csproj", "{DA9C27C3-6348-4D2A-A8B0-AF69CD49FE18}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmark", "Benchmark\MikeNakis.Intertwine.Benchmark.csproj", "{DA9C27C3-6348-4D2A-A8B0-AF69CD49FE18}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

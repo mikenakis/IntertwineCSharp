@@ -207,47 +207,47 @@ namespace MikeNakis.Intertwine.Benchmark
 		}
 
 #region Handwrittern //////////////////////////////////////////////////////////////////////
-		public sealed class HandwrittenFooableEntwiner<T> : Entwiner, IFooable<T>
+		public sealed class HandwrittenFooableEntwiner<T> : IFooable<T>
 		{
-			public HandwrittenFooableEntwiner( AnyCall any_call )
-					: base( typeof(IFooable<T>), any_call )
-			{ }
+			private readonly AnyCall any_call;
 
-			void IFooable<T>.Aardvark() => AnyCall( 0, Sys.Array.Empty<object>() );
-			T IFooable<T>.Buffalo() => (T)AnyCall( 1, Sys.Array.Empty<object>() );
-			void IFooable<T>.Crocodile( T t ) => AnyCall( 2, new object[] { t } );
+			public HandwrittenFooableEntwiner( AnyCall any_call )
+			{
+				this.any_call = any_call;
+			}
+
+			void IFooable<T>.Aardvark() => any_call( 0, Sys.Array.Empty<object>() );
+			T IFooable<T>.Buffalo() => (T)any_call( 1, Sys.Array.Empty<object>() );
+			void IFooable<T>.Crocodile( T t ) => any_call( 2, new object[] { t } );
 
 			void IFooable<T>.Dog( T t, out T ot )
 			{
 				var args = new object[] { t, default(T) };
-				AnyCall( 3, args );
+				any_call( 3, args );
 				ot = (T)args[1];
 			}
 
 			void IFooable<T>.Eagle( T t, ref T rt )
 			{
 				var args = new object[] { t, rt };
-				AnyCall( 4, args );
+				any_call( 4, args );
 				rt = (T)args[1];
 			}
 
-			T IFooable<T>.Flamingo { get => (T)AnyCall( 5, Sys.Array.Empty<object>() ); set => AnyCall( 6, new object[] { value } ); }
-			T IFooable<T>.this[ T t ] { get => (T)AnyCall( 7, new object[] { t } ); set => AnyCall( 8, new object[] { t, value } ); }
+			T IFooable<T>.Flamingo { get => (T)any_call( 5, Sys.Array.Empty<object>() ); set => any_call( 6, new object[] { value } ); }
+			T IFooable<T>.this[ T t ] { get => (T)any_call( 7, new object[] { t } ); set => any_call( 8, new object[] { t, value } ); }
 		}
 
-		private sealed class HandwrittenFooableUntwiner<T> : Untwiner
+		private sealed class HandwrittenFooableUntwiner<T>
 		{
 			private readonly IFooable<T> target;
 
 			public HandwrittenFooableUntwiner( IFooable<T> target )
-					: base( typeof(IFooable<T>) )
 			{
 				this.target = target;
 			}
 
-			public override object Target => target;
-
-			public override object AnyCall( int selector, object[] args )
+			public object AnyCall( int selector, object[] args )
 			{
 				switch( selector )
 				{
@@ -295,8 +295,8 @@ namespace MikeNakis.Intertwine.Benchmark
 			public BenchmarkHandwrittenInvocation()
 			{
 				IFooable<string> fooable = new FooImplementation<string>();
-				Untwiner untwiner = new HandwrittenFooableUntwiner<string>( fooable );
-				entwiner = new HandwrittenFooableEntwiner<string>( untwiner.AnyCall );
+				AnyCall untwiner = new HandwrittenFooableUntwiner<string>( fooable ).AnyCall;
+				entwiner = new HandwrittenFooableEntwiner<string>( untwiner );
 			}
 
 			public override void RunOnce()
@@ -307,11 +307,11 @@ namespace MikeNakis.Intertwine.Benchmark
 #endregion
 
 #region Castle Benchmarking Routines //////////////////////////////////////////////////////
-		private sealed class BenchmarkCastleCreation/*WithCaching*/ : Benchmark
+		private sealed class BenchmarkCastleCreation /*WithCaching*/ : Benchmark
 		{
 			private readonly IFooable<string> fooable;
 
-			public BenchmarkCastleCreation/*WithCaching*/()
+			public BenchmarkCastleCreation /*WithCaching*/()
 			{
 				fooable = new FooImplementation<string>();
 				//CastleProxyGenerator.ProxyBuilder.ModuleScope.IsCaching = true;  This used to compile, but not anymore. It appears that they discontinued the "IsCaching" property.
@@ -319,8 +319,8 @@ namespace MikeNakis.Intertwine.Benchmark
 
 			public override void RunOnce()
 			{
-				Untwiner untwiner = CastleGetUntwiner( fooable );
-				CastleGetEntwiner<IFooable<string>>( untwiner.AnyCall );
+				AnyCall untwiner = CastleGetUntwiner( fooable );
+				CastleGetEntwiner<IFooable<string>>( untwiner );
 			}
 		}
 
@@ -331,8 +331,8 @@ namespace MikeNakis.Intertwine.Benchmark
 			public BenchmarkCastleInvocation()
 			{
 				IFooable<string> fooable = new FooImplementation<string>();
-				Untwiner untwiner = CastleGetUntwiner( fooable );
-				entwiner = CastleGetEntwiner<IFooable<string>>( untwiner.AnyCall );
+				AnyCall untwiner = CastleGetUntwiner( fooable );
+				entwiner = CastleGetEntwiner<IFooable<string>>( untwiner );
 			}
 
 			public override void RunOnce()
@@ -349,20 +349,21 @@ namespace MikeNakis.Intertwine.Benchmark
 			return CastleProxyGenerator.CreateInterfaceProxyWithoutTarget<T>( interceptor );
 		}
 
-		public static Untwiner CastleGetUntwiner<T>( T target ) where T : class //actually, interface
+		public static AnyCall CastleGetUntwiner<T>( T target ) where T : class //actually, interface
 		{
 			// The Castle DynamicProxy does not offer any untwining functionality, so we use a reflecting untwiner.
-			return new ReflectingUntwiner( typeof(T), target );
+			return new ReflectingUntwiner( typeof(T), target ).AnyCall;
 		}
 
-		private sealed class EntwinerForCastle : Entwiner, CastleDP.IInterceptor
+		private sealed class EntwinerForCastle : CastleDP.IInterceptor
 		{
+			private readonly AnyCall any_call;
 			private readonly Dictionary<SysReflect.MethodInfo, int> selector_map = new Dictionary<SysReflect.MethodInfo, int>();
 
 			public EntwinerForCastle( System.Type interface_type, AnyCall any_call )
-					: base( interface_type, any_call )
 			{
-				var method_infos = InterfaceType.GetMethods( SysReflect.BindingFlags.Public | SysReflect.BindingFlags.NonPublic | SysReflect.BindingFlags.Instance );
+				this.any_call = any_call;
+				var method_infos = interface_type.GetMethods( SysReflect.BindingFlags.Public | SysReflect.BindingFlags.NonPublic | SysReflect.BindingFlags.Instance );
 				for( int i = 0; i < method_infos.Length; i++ )
 					selector_map.Add( method_infos[i], i );
 			}
@@ -370,7 +371,7 @@ namespace MikeNakis.Intertwine.Benchmark
 			void CastleDP.IInterceptor.Intercept( CastleDP.IInvocation invocation )
 			{
 				int selector = selector_map[invocation.Method];
-				invocation.ReturnValue = AnyCall( selector, invocation.Arguments );
+				invocation.ReturnValue = any_call( selector, invocation.Arguments );
 			}
 		}
 #endregion
@@ -475,14 +476,15 @@ namespace MikeNakis.Intertwine.Benchmark
 			return new ReflectingUntwiner( typeof(T), target ).AnyCall;
 		}
 
-		private sealed class EntwinerForLinFu : Entwiner, LinFuDP.IInterceptor
+		private sealed class EntwinerForLinFu : LinFuDP.IInterceptor
 		{
+			private readonly AnyCall any_call;
 			private readonly Dictionary<SysReflect.MethodInfo, int> selector_map = new Dictionary<SysReflect.MethodInfo, int>();
 
-			public EntwinerForLinFu( System.Type interface_type, AnyCall any_call )
-					: base( interface_type, any_call )
+			public EntwinerForLinFu( Sys.Type interface_type, AnyCall any_call )
 			{
-				var method_infos = InterfaceType.GetMethods( SysReflect.BindingFlags.Public | SysReflect.BindingFlags.NonPublic | SysReflect.BindingFlags.Instance );
+				this.any_call = any_call;
+				var method_infos = interface_type.GetMethods( SysReflect.BindingFlags.Public | SysReflect.BindingFlags.NonPublic | SysReflect.BindingFlags.Instance );
 				for( int i = 0; i < method_infos.Length; i++ )
 					selector_map.Add( method_infos[i], i );
 			}
@@ -490,7 +492,7 @@ namespace MikeNakis.Intertwine.Benchmark
 			object LinFuDP.IInterceptor.Intercept( LinFuDP.InvocationInfo info )
 			{
 				int selector = selector_map[info.TargetMethod];
-				return AnyCall( selector, info.Arguments );
+				return any_call( selector, info.Arguments );
 			}
 		}
 #endregion

@@ -1,5 +1,7 @@
 ﻿namespace MikeNakis.Intertwine
 {
+	///<summary>Creates (or obtains if cached) an <see cref="Intertwine"/> for an interface.</summary>
+	///<author>michael.gr</author>
 	public interface IntertwineFactory
 	{
 		///<summary>Obtains an <see cref="Intertwine"/> for a given interface type.</summary>

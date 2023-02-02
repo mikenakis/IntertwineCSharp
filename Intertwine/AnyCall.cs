@@ -7,5 +7,6 @@ namespace MikeNakis.Intertwine
 	/// <param name="selector">The ordinal number of the interface method being called.</param>
 	/// <param name="arguments">An array of objects containing the arguments of the call.</param>
 	/// <returns>An object representing the return value of the method call.</returns>
+	///<author>michael.gr</author>
 	public delegate object AnyCall( int selector, object[] arguments );
 }

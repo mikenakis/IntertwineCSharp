@@ -3,6 +3,7 @@
 #nullable enable
 namespace MikeNakis.Intertwine
 {
+	///<author>michael.gr</author>
 	public static class Dbg
 	{
 		[System.Diagnostics.CodeAnalysis.SuppressMessage( "Microsoft.Design", "CA1032:ImplementStandardExceptionConstructors" )]
